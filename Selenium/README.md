@@ -37,7 +37,7 @@ O material está formatado em Markdown (.md), que é renderizado automaticamente
 Para aproveitar este material, você deve ter:
 
 - Concluído a seção de [Python Básico](https://classroom.google.com/w/Njk5MTYyMzA0NjQz/tc/Njk5MTYyMzQ1MTU4)
-- Python 3.7 ou superior instalado em seu computador
+- Realizado a instalação do [uv e do Python](../tutorial_uv.md)
 - Google Chrome instalado
 
 ## Recursos Adicionais
