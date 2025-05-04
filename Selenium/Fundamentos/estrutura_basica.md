@@ -9,18 +9,16 @@ Essa é a **classe base mais comum**, ideal para testes automatizados. Ela herda
 ```python
 from seleniumbase import BaseCase
 
-class MeuTeste(BaseCase):
+class TestExemplo(BaseCase):
     def test_exemplo(self):
         # Abrir uma página
-        self.open("https://www.exemplo.com")
-
+        self.open("https://www.google.com")
         # Interagir com elementos
-        self.type("#campo-busca", "selenium")
-        self.click("#botao-buscar")
-
+        self.type('textarea[name="q"]', "selenium python")
+        self.click('input[value="Pesquisa Google"]')
         # Verificar resultados
-        self.assert_element(".resultados")
-        self.assert_text("Resultados para: selenium", "h1")
+        self.assert_element("#search")
+        self.assert_text("resultados", "#result-stats")
 ```
 
 ## 2. Classe SB
@@ -33,15 +31,13 @@ from seleniumbase import SB
 # Criar uma instância do navegador
 with SB(browser="chrome") as sb:
     # Abrir uma página
-    sb.open("https://www.exemplo.com")
-
+    sb.open("https://www.google.com")
     # Interagir com elementos
-    sb.type("#campo-busca", "selenium")
-    sb.click("#botao-buscar")
-
+    sb.type('textarea[name="q"]', "selenium python")
+    sb.click('input[value="Pesquisa Google"]')
     # Verificar resultados
-    sb.assert_element(".resultados")
-    sb.assert_text("Resultados para: selenium", "h1")
+    sb.assert_element("#search")
+    sb.assert_text("resultados", "#result-stats")
 ```
 
 ## Diferenças entre BaseCase e SB
