@@ -98,38 +98,49 @@ self.wait_for_url_to_contain("resultado")
 
 ```python
 from seleniumbase import BaseCase
+import time
 
 class TestEsperasInteligentes(BaseCase):
     def test_formulario_dinamico(self):
-        # Abre a página com formulário
-        self.open("https://exemplo.com/formulario")
-
-        # Espera até que o formulário seja carregado completamente
-        self.wait_for_element("#form-container")
-
-        # Preenche o primeiro campo
-        self.type("#email", "usuario@teste.com")
-
-        # Clica em um botão que faz aparecer campos adicionais
-        self.click("#mostrar-mais-campos")
-
-        # Espera até que os campos adicionais apareçam
-        self.wait_for_element_visible("#campos-adicionais")
-
-        # Preenche campo adicional
-        self.type("#telefone", "98765-4321")
-
-        # Envia o formulário
-        self.click("#enviar")
-
-        # Espera aparecer um spinner de processamento
-        self.wait_for_element_visible(".processando")
-
-        # Espera o spinner desaparecer
-        self.wait_for_element_absent(".processando")
-
-        # Verifica se apareceu mensagem de sucesso
-        self.wait_for_text("Formulário enviado com sucesso!", ".mensagem")
+        # Abre a página com conteúdo dinâmico
+        self.open("https://the-internet.herokuapp.com/dynamic_loading/1")
+        
+        # Demonstração: SEM espera inteligente (ruim!)
+        # self.click("#start button")  # Isso falharia!
+        
+        # Demonstração: COM espera inteligente (bom!)
+        self.wait_for_element("#start button")
+        self.click("#start button")
+        
+        # Aqui o elemento aparece após delay
+        print("Esperando o texto aparecer...")
+        self.wait_for_element_visible("#loading")
+        self.wait_for_text_visible("Hello World!", "#finish", timeout=20)
+        
+        # Verificação final
+        self.assert_text("Hello World!", "#finish")
+        
+        # Pausa para visualização
+        time.sleep(2)
+        
+        # Outro exemplo - elementos que somem
+        self.open("https://the-internet.herokuapp.com/dynamic_controls")
+        
+        print("Removendo o checkbox...")
+        self.click("#checkbox-example button")
+        self.wait_for_element_absent("#checkbox")
+        self.wait_for_text("It's gone!", "#message")
+        
+        # Pausa para visualização
+        time.sleep(2)
+        
+        print("Adicionando o checkbox de volta...")
+        self.click("#checkbox-example button")
+        self.wait_for_element_visible("#checkbox")
+        self.wait_for_text("It's back!", "#message")
+        
+        # Pausa final para visualização
+        time.sleep(2)
 ```
 
 ## Quando usar cada tipo de espera
