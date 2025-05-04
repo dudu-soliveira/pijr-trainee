@@ -18,34 +18,51 @@ Caso queira limpar o campo antes de digitar (quando o campo já vem preenchido c
 
 ```python
 from seleniumbase import BaseCase
+import time
 
 class TestFormulario(BaseCase):
     def test_preencher_form(self):
         # Abrir a página com o formulário
-        self.open("https://www.exemplo.com/formulario")
-
-        # Preencher os campos do formulário
-        self.type("#nome", "João Silva")
-
-        # Limpar e depois preencher um campo que já vem com texto
-        self.clear("#email")
-        self.type("#email", "joao.silva@exemplo.com")
-
-        # Alternativa: usar update_text para limpar e preencher em um único comando
-        self.update_text("#telefone", "(11) 98765-4321")
-
-        # Preencher outros campos
-        self.type("#endereco", "Rua das Flores, 123")
-        self.type("#cidade", "São Paulo")
-
-        # Selecionar uma opção em um dropdown
-        self.select_option_by_text("#estado", "São Paulo")
-
-        # Clicar no botão de enviar
-        self.click("#enviar")
-
-        # Verificar se a submissão foi bem-sucedida
-        self.assert_text("Formulário enviado com sucesso!", ".mensagem-sucesso")
+        self.open("https://the-internet.herokuapp.com/login")
+        time.sleep(3)
+        
+        # Preencher os campos do formulário de login
+        self.type("#username", "tomsmith")
+        time.sleep(3)
+        
+        self.type("#password", "SuperSecretPassword!")
+        time.sleep(3)
+        
+        # Clicar no botão de login
+        self.click("button[type='submit']")
+        time.sleep(3)
+        
+        # Verificar se o login foi bem-sucedido
+        self.assert_text("You logged into a secure area!", "#flash")
+        time.sleep(3)
+        
+        # Ir para página de inputs
+        self.open("https://the-internet.herokuapp.com/inputs")
+        time.sleep(3)
+        
+        # Preencher campo numérico
+        self.type("input[type='number']", "1234")
+        time.sleep(3)
+        
+        # Limpar e preencher novamente
+        self.clear("input[type='number']")
+        time.sleep(3)
+        
+        self.type("input[type='number']", "5678")
+        time.sleep(3)
+        
+        # Ir para página de dropdown
+        self.open("https://the-internet.herokuapp.com/dropdown")
+        time.sleep(3)
+        
+        # Selecionar opção do dropdown
+        self.select_option_by_text("#dropdown", "Option 2")
+        time.sleep(3)
 ```
 
 ## Trabalhando com diferentes tipos de campos
