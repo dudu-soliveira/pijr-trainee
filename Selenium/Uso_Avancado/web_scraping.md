@@ -31,50 +31,52 @@ import time
 class ProdutosScraper(BaseCase):
     def test_coletar_produtos(self):
         # Abrir a página de produtos
-        self.open("https://www.exemplo.com/produtos")
+        self.open("http://quotes.toscrape.com/")
+        time.sleep(2)
 
         # Esperar o carregamento da página
-        time.sleep(2)  # Melhor usar wait_for_element para páginas reais
+        self.wait_for_element(".quote")
+        time.sleep(2)
 
-        # Encontrar todos os produtos
-        produtos = self.find_elements(".produto")
+        # Encontrar todos os quotes (substituindo "produtos")
+        quotes = self.find_elements(".quote")
 
         # Listas para armazenar os dados coletados
-        nomes = []
-        precos = []
+        textos = []
+        autores = []
 
-        # Extrair os dados de cada produto
-        for produto in produtos:
-            # Obter o nome do produto
-            nome_elemento = produto.find_element_by_css_selector(".produto-nome")
-            nome = nome_elemento.text
-            nomes.append(nome)
+        # Extrair os dados de cada quote
+        for i in range(len(quotes)):
+            # Obter o texto do quote usando seletor específico
+            texto_elemento = self.find_element(f".quote:nth-of-type({i+1}) .text")
+            texto = texto_elemento.text
+            textos.append(texto)
 
-            # Obter o preço do produto
-            preco_elemento = produto.find_element_by_css_selector(".produto-preco")
-            preco = preco_elemento.text
-            precos.append(preco)
+            # Obter o autor do quote
+            autor_elemento = self.find_element(f".quote:nth-of-type({i+1}) .author")
+            autor = autor_elemento.text
+            autores.append(autor)
 
         # Mostrar os resultados
-        print(f"Foram encontrados {len(nomes)} produtos:")
-        for i in range(len(nomes)):
-            print(f"Produto: {nomes[i]} - Preço: {precos[i]}")
+        print(f"Foram encontrados {len(textos)} quotes:")
+        for i in range(len(textos)):
+            print(f"Quote: {textos[i]} - Autor: {autores[i]}")
 
         # Opcional: Salvar os dados em um arquivo CSV
-        self.salvar_csv(nomes, precos)
+        self.salvar_csv(textos, autores)
 
-    def salvar_csv(self, nomes, precos):
+    def salvar_csv(self, textos, autores):
         import csv
 
-        with open('produtos.csv', 'w', newline='', encoding='utf-8') as arquivo:
+        with open('quotes.csv', 'w', newline='', encoding='utf-8') as arquivo:
             writer = csv.writer(arquivo)
             # Escrever cabeçalho
-            writer.writerow(['Nome', 'Preço'])
+            writer.writerow(['Texto', 'Autor'])
             # Escrever dados
-            for i in range(len(nomes)):
-                writer.writerow([nomes[i], precos[i]])
+            for i in range(len(textos)):
+                writer.writerow([textos[i], autores[i]])
 
-        print("Dados salvos em produtos.csv")
+        print("Dados salvos em quotes.csv")          
 ```
 
 ## Técnicas Avançadas de Web Scraping
@@ -83,33 +85,44 @@ class ProdutosScraper(BaseCase):
 
 ```python
 def test_scraping_com_paginacao(self):
-    self.open("https://www.exemplo.com/produtos")
+    self.open("http://quotes.toscrape.com/")
+    time.sleep(2)
 
     pagina_atual = 1
-    max_paginas = 5  # Limite para não executar infinitamente
+    max_paginas = 3  # Limite para não executar infinitamente
 
-    todos_produtos = []
+    todos_quotes = []
 
     while pagina_atual <= max_paginas:
-        # Extrair produtos da página atual
-        produtos = self.find_elements(".produto")
+        # Extrair quotes da página atual
+        quotes = self.find_elements(".quote")
 
-        for produto in produtos:
-            nome = produto.find_element_by_css_selector(".produto-nome").text
-            preco = produto.find_element_by_css_selector(".produto-preco").text
-            todos_produtos.append({"nome": nome, "preco": preco})
+        for i in range(len(quotes)):
+            texto = self.find_element(f".quote:nth-of-type({i+1}) .text").text
+            autor = self.find_element(f".quote:nth-of-type({i+1}) .author").text
+            todos_quotes.append({"texto": texto, "autor": autor})
 
         # Verificar se existe botão "Próxima página"
-        if self.is_element_present("a.proxima-pagina"):
-            self.click("a.proxima-pagina")
+        if self.is_element_present("li.next a"):
+            self.click("li.next a")
             pagina_atual += 1
+            time.sleep(2)
             # Esperar a nova página carregar
-            self.wait_for_element(".produto")
+            self.wait_for_element(".quote")
         else:
             # Não há mais páginas
             break
 
-    print(f"Total de produtos coletados: {len(todos_produtos)}")
+    print(f"Total de quotes coletados: {len(todos_quotes)}")
+    
+    # Salvar em CSV
+    import csv
+    with open('quotes_multiplas_paginas.csv', 'w', newline='', encoding='utf-8') as arquivo:
+        writer = csv.DictWriter(arquivo, fieldnames=['texto', 'autor'])
+        writer.writeheader()
+        writer.writerows(todos_quotes)
+    
+    print("Dados salvos em quotes_multiplas_paginas.csv")
 ```
 
 ### 2. Extração de Dados de Tabelas
@@ -118,32 +131,43 @@ As tabelas HTML são estruturas comuns para exibir dados organizados:
 
 ```python
 def test_extrair_tabela(self):
-    self.open("https://www.exemplo.com/tabela")
+    self.open("https://the-internet.herokuapp.com/tables")
+    time.sleep(2)
 
     # Obter todas as linhas da tabela (exceto o cabeçalho)
-    linhas = self.find_elements("table#dados tbody tr")
+    linhas = self.find_elements("#table1 tbody tr")
 
     dados_tabela = []
 
-    for linha in linhas:
-        # Obter as células da linha
-        celulas = linha.find_elements_by_tag_name("td")
-
-        # Extrair dados de cada célula
-        id = celulas[0].text
-        nome = celulas[1].text
-        valor = celulas[2].text
+    for i in range(len(linhas)):
+        # Obter as células da linha específica
+        sobrenome = self.find_element(f"#table1 tbody tr:nth-of-type({i+1}) td:nth-of-type(1)").text
+        nome = self.find_element(f"#table1 tbody tr:nth-of-type({i+1}) td:nth-of-type(2)").text
+        email = self.find_element(f"#table1 tbody tr:nth-of-type({i+1}) td:nth-of-type(3)").text
+        valor = self.find_element(f"#table1 tbody tr:nth-of-type({i+1}) td:nth-of-type(4)").text
+        website = self.find_element(f"#table1 tbody tr:nth-of-type({i+1}) td:nth-of-type(5)").text
 
         # Armazenar os dados
         dados_tabela.append({
-            "id": id,
+            "sobrenome": sobrenome,
             "nome": nome,
-            "valor": valor
+            "email": email,
+            "valor": valor,
+            "website": website
         })
 
     # Processar os dados conforme necessário
     for item in dados_tabela:
-        print(f"ID: {item['id']}, Nome: {item['nome']}, Valor: {item['valor']}")
+        print(f"Nome: {item['nome']} {item['sobrenome']}, Email: {item['email']}, Valor: {item['valor']}")
+    
+    # Salvar em CSV
+    import csv
+    with open('dados_tabela.csv', 'w', newline='', encoding='utf-8') as arquivo:
+        writer = csv.DictWriter(arquivo, fieldnames=['sobrenome', 'nome', 'email', 'valor', 'website'])
+        writer.writeheader()
+        writer.writerows(dados_tabela)
+    
+    print("Dados salvos em dados_tabela.csv")
 ```
 
 ### 3. Lidando com Conteúdo Dinâmico
@@ -152,22 +176,30 @@ Muitos sites modernos carregam conteúdo dinamicamente com JavaScript. Nesses ca
 
 ```python
 def test_conteudo_dinamico(self):
-    self.open("https://www.exemplo.com/dinamico")
+    self.open("https://the-internet.herokuapp.com/dynamic_loading/2")
+    time.sleep(2)
 
     # Clicar em um botão que carrega conteúdo dinamicamente
-    self.click("#carregar-mais")
+    self.click("#start button")
+    time.sleep(2)
 
     # Esperar pelo carregamento do conteúdo
-    self.wait_for_element(".item-dinamico")
+    self.wait_for_element_visible("#finish h4")
+    time.sleep(2)
 
     # Agora podemos extrair os dados
-    itens = self.find_elements(".item-dinamico")
-
-    for item in itens:
-        titulo = item.find_element_by_css_selector("h3").text
-        descricao = item.find_element_by_css_selector("p").text
-        print(f"Título: {titulo}")
-        print(f"Descrição: {descricao}")
+    resultado = self.find_element("#finish h4")
+    texto = resultado.text
+    print(f"Texto carregado dinamicamente: {texto}")
+    
+    # Salvar resultado em CSV
+    import csv
+    with open('conteudo_dinamico.csv', 'w', newline='', encoding='utf-8') as arquivo:
+        writer = csv.writer(arquivo)
+        writer.writerow(['Texto Dinâmico'])
+        writer.writerow([texto])
+    
+    print("Dados salvos em conteudo_dinamico.csv")
 ```
 
 ### 4. Extraindo Atributos de Elementos
@@ -176,26 +208,51 @@ Além do texto, muitas vezes precisamos extrair atributos como URLs de links ou 
 
 ```python
 def test_extrair_atributos(self):
-    self.open("https://www.exemplo.com/galeria")
+    self.open("https://the-internet.herokuapp.com/broken_images")
+    time.sleep(2)
 
     # Encontrar todas as imagens
-    imagens = self.find_elements("img.galeria-item")
+    imagens = self.find_elements("img")
+    dados_imagens = []
 
-    for img in imagens:
-        # Extrair o URL da imagem
+    for i in range(len(imagens)):
+        # Extrair o URL da imagem específica
+        img = self.find_element(f"img:nth-of-type({i+1})")
         url = img.get_attribute("src")
-        # Extrair o texto alternativo
-        alt = img.get_attribute("alt")
-        print(f"Imagem: {alt}, URL: {url}")
+        print(f"URL da imagem {i+1}: {url}")
+        dados_imagens.append({"numero": i+1, "url": url})
+
+    # Exemplo com links
+    self.open("https://the-internet.herokuapp.com/status_codes")
+    time.sleep(2)
 
     # Encontrar todos os links
-    links = self.find_elements("a.produto-link")
+    links = self.find_elements("ul li a")
+    dados_links = []
 
-    for link in links:
-        # Extrair o URL do link
+    for i in range(len(links)):
+        # Extrair o URL do link específico
+        link = self.find_element(f"ul li:nth-of-type({i+1}) a")
         href = link.get_attribute("href")
         texto = link.text
-        print(f"Link: {texto}, URL: {href}")
+        if href and texto:  # Apenas links válidos
+            print(f"Link: {texto}, URL: {href}")
+            dados_links.append({"texto": texto, "url": href})
+    
+    # Salvar imagens em CSV
+    import csv
+    with open('imagens_extraidas.csv', 'w', newline='', encoding='utf-8') as arquivo:
+        writer = csv.DictWriter(arquivo, fieldnames=['numero', 'url'])
+        writer.writeheader()
+        writer.writerows(dados_imagens)
+    
+    # Salvar links em CSV
+    with open('links_extraidos.csv', 'w', newline='', encoding='utf-8') as arquivo:
+        writer = csv.DictWriter(arquivo, fieldnames=['texto', 'url'])
+        writer.writeheader()
+        writer.writerows(dados_links)
+    
+    print("Dados salvos em imagens_extraidas.csv e links_extraidos.csv")
 ```
 
 ## Boas Práticas para Web Scraping
